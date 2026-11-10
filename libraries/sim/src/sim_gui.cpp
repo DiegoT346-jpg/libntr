@@ -7,7 +7,9 @@
 #include "imgui_impl_sdl2.h"
 #include "gui_internal.hpp"
 
+#if SIM_IMGUI_FILE_DIALOG_SUPPORT
 #include "ImGuiFileDialog.h"
+#endif
 
 namespace SIM::GUI {
 static SDL_Window * sWindow;
@@ -77,6 +79,7 @@ void Main() {
         AppButton("ImGui Demo", &sShowImGuiDemo, nullptr, ImGui::ShowDemoWindow);
         AppButton("Application", &sShowWindowPrjSpecific, nullptr, PrjMain);
 
+        #if SIM_IMGUI_FILE_DIALOG_SUPPORT
         if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey", ImGuiWindowFlags_NoCollapse, ImVec2(200, 200))) {
           if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
             std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
@@ -91,6 +94,7 @@ void Main() {
           // close
           ImGuiFileDialog::Instance()->Close();
         }
+        #endif
 
         ImGui::Checkbox("Pause Game Logic", &sPauseGameLogic);
 
@@ -101,9 +105,13 @@ void Main() {
 void OpenFileDialog(std::function<void(std::string)> callback) {
     sFileDialogCallback = callback;
 
+    #if SIM_IMGUI_FILE_DIALOG_SUPPORT
     IGFD::FileDialogConfig config;
     	config.path = ".";
     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Select NDS ROM", ".nds,.srl", config);
+    #else 
+    SIM_assert_always();
+    #endif
 }
 
 void NewFrame() {
